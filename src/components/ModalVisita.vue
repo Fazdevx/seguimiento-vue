@@ -1,7 +1,7 @@
 <script setup>
 import { store } from '../store.js'
 
-const { modalVisita, visitaForm, cerrarModalVisita, guardarVisita } = store
+const { modalVisita, visitaForm, cerrarModalVisita, guardarVisita, destinos } = store
 const opcionesTipo = [
   'Control General',
   'Revisión de Desarrollo',
@@ -48,6 +48,47 @@ const opcionesTipo = [
               <label>Temperatura (°C)</label>
               <input type="number" v-model="visitaForm.temp" step="0.1" min="0" placeholder="ej. 36.5" />
             </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Hemoglobina (g/dL)</label>
+              <input type="number" v-model="visitaForm.hemoglobina" step="0.1" min="0" placeholder="ej. 13.5" />
+            </div>
+            <div class="field">
+              <label>Frecuencia cardiaca (lpm)</label>
+              <input type="number" v-model="visitaForm.fc" step="1" min="0" placeholder="ej. 80" />
+            </div>
+            <div class="field">
+              <label>Frecuencia respiratoria (rpm)</label>
+              <input type="number" v-model="visitaForm.fr" step="1" min="0" placeholder="ej. 18" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Presión arterial — Sistólica (mmHg)</label>
+              <input type="number" v-model="visitaForm.paSis" step="1" min="0" placeholder="ej. 110" />
+            </div>
+            <div class="field">
+              <label>Presión arterial — Diastólica (mmHg)</label>
+              <input type="number" v-model="visitaForm.paDia" step="1" min="0" placeholder="ej. 70" />
+            </div>
+            <div class="field">
+              <label>Saturación de O₂ (%)</label>
+              <input type="number" v-model="visitaForm.spo2" step="1" min="0" max="100" placeholder="ej. 97" />
+            </div>
+          </div>
+          <div class="field">
+            <label>¿A dónde se dirige el alumno?</label>
+            <select v-model="visitaForm.destino">
+              <option v-for="d in destinos" :key="d.id" :value="d.id">{{ d.label }}</option>
+            </select>
+            <input
+              v-if="visitaForm.destino === 'otro'"
+              type="text"
+              v-model="visitaForm.destinoOtro"
+              placeholder="Indica el otro destino..."
+              style="margin-top:8px"
+            />
           </div>
           <div class="field">
             <label>Observaciones</label>

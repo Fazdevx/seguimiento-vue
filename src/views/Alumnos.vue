@@ -8,9 +8,16 @@ const {
   seccionesFiltradas,
   seccionesFiltradasObj,
   seleccionarAlumno,
+  irAlumno,
   getAlumnoEstado,
-  getEstadoClass
+  getEstadoClass,
+  clasificacionAlumno
 } = store
+
+function abrirFicha(sec, i) {
+  seleccionarAlumno(sec, i)
+  irAlumno()
+}
 </script>
 
 <template>
@@ -57,10 +64,15 @@ const {
               v-for="(alumno, i) in lista"
               :key="i"
               class="alumno-row"
-              @click="seleccionarAlumno(sec, i)"
+              @click="abrirFicha(sec, i)"
             >
               <span class="alumno-name">{{ alumno.nombre }}</span>
               <span class="alumno-sec">{{ sec }}</span>
+              <span class="alumno-status" v-if="clasificacionAlumno(sec, i)">
+                <span class="badge" :class="clasificacionAlumno(sec, i).cls">
+                  {{ clasificacionAlumno(sec, i).label }}
+                </span>
+              </span>
               <span class="alumno-status">
                 <span class="badge" :class="getEstadoClass(getAlumnoEstado(sec, i))">
                   <svg v-if="getAlumnoEstado(sec, i).estado === 'ok'" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>

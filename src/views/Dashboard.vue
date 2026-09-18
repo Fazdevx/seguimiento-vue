@@ -1,7 +1,7 @@
 <script setup>
 import { store } from '../store.js'
 
-const { historial, stats, topRisk, totalAlumnos, descargarCSV, descargarJSON } = store
+const { historial, stats, statsFichas, topRisk, totalAlumnos, descargarCSV, descargarJSON } = store
 </script>
 
 <template>
@@ -61,7 +61,7 @@ const { historial, stats, topRisk, totalAlumnos, descargarCSV, descargarJSON } =
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon purple">
+        <div class="stat-icon nurse">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
         </div>
         <div class="stat-info">
@@ -73,12 +73,53 @@ const { historial, stats, topRisk, totalAlumnos, descargarCSV, descargarJSON } =
 
     <div class="card">
       <div class="card-header">
+        <h3><span class="material-icons">verified</span> Clasificación de salud</h3>
+      </div>
+      <div class="card-body">
+        <div class="clasif-grid">
+          <div class="clasif-stat">
+            <span class="clasif-dot ok"></span>
+            <div>
+              <span class="clasif-num">{{ statsFichas.apto }}</span>
+              <span class="clasif-name">Apto</span>
+            </div>
+          </div>
+          <div class="clasif-stat">
+            <span class="clasif-dot warn"></span>
+            <div>
+              <span class="clasif-num">{{ statsFichas.obs }}</span>
+              <span class="clasif-name">Apto con observación</span>
+            </div>
+          </div>
+          <div class="clasif-stat">
+            <span class="clasif-dot bad"></span>
+            <div>
+              <span class="clasif-num">{{ statsFichas.req }}</span>
+              <span class="clasif-name">Requieren atención médica</span>
+            </div>
+          </div>
+          <div class="clasif-stat">
+            <span class="clasif-dot none"></span>
+            <div>
+              <span class="clasif-num">{{ statsFichas.sin }}</span>
+              <span class="clasif-name">Sin ficha registrada</span>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-top:8px">
+          Las fichas de salud se crean desde la sección <strong>Fichas de Salud</strong>.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
         <h3><span class="material-icons">info</span> Resumen del sistema</h3>
       </div>
       <div class="card-body">
         <div class="alert alert-info" v-if="Object.keys(historial).length === 0">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-          <span>Comenzando sesión. Registra visitas desde la sección <strong>Seguimiento</strong> para iniciar el control clínico.</span>
+          <span>Comenzando sesión. Abre la sección <strong>Fichas de Salud</strong> para crear la ficha y registrar las atenciones de cada alumno.</span>
         </div>
         <div v-else class="alert alert-success">
           <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>

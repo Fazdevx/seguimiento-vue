@@ -19,13 +19,15 @@ function cerrar() {
           </button>
         </div>
         <div class="modal-body" style="font-size:13.5px;color:var(--text-secondary);line-height:1.8">
-          <p style="margin-bottom:14px"><strong>Sistema de Seguimiento Clínico — Academia Galileo</strong></p>
+          <p style="margin-bottom:14px"><strong>Sistema de Salud Escolar — Academia Galileo</strong></p>
           <div style="display:flex;flex-direction:column;gap:12px">
-            <p>1. <strong>Dashboard</strong>: panel general con estadísticas del seguimiento.</p>
+            <p>1. <strong>Dashboard</strong>: panel general con estadísticas del seguimiento y clasificación de salud.</p>
             <p>2. <strong>Alumnos</strong>: lista completa organizada por las 19 secciones. Haz click en un alumno para seleccionarlo.</p>
-            <p>3. <strong>Seguimiento</strong>: registra visitas con fecha, peso, talla, temperatura y observaciones.</p>
+            <p>3. <strong>Fichas de Salud</strong>: registra DNI, fecha de nacimiento, edad, apoderado, teléfono, antecedentes, alergias, control de vacunación y la clasificación médica (apto, apto con observación o requiere atención médica). Desde aquí también registras las <strong>atenciones/visitas</strong> de cada alumno y descargas la ficha en <strong>PDF</strong>.</p>
             <p>4. <strong>Reporte</strong>: muestra alumnos que deben derivarse a centro de salud por falta de continuidad.</p>
             <hr style="border:none;border-top:1px solid var(--border);margin:4px 0" />
+            <p><strong>Logo del colegio:</strong> usa el botón "Subir logo" en Fichas de Salud. El logo aparece en el encabezado de la ficha PDF.</p>
+            <p><strong>PDF:</strong> el botón "Descargar PDF" abre el diálogo de impresión; elige "Guardar como PDF" como destino.</p>
             <p><strong>Exportar:</strong> Usa los botones del sidebar para descargar JSON o CSV (compatible con Excel).</p>
             <p><strong>LocalStorage:</strong> los datos se guardan en tu navegador. No se pierden al recargar.</p>
           </div>

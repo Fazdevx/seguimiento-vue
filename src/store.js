@@ -1,7 +1,10 @@
 import { ref, reactive, computed } from 'vue'
 import { alumnos } from './data/alumnos.js'
+import escudoDefault from './assets/escudo.png'
 
 const STORAGE_KEY = 'seguimientoGalileo_vue'
+const STORAGE_KEY_FICHAS = 'seguimientoGalileo_fichas_vue'
+const STORAGE_KEY_LOGO = 'seguimientoGalileo_logo'
 
 const alumnosPorSeccion = ref(alumnos)
 
@@ -9,6 +12,22 @@ const historial = ref({})
 try {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored) historial.value = JSON.parse(stored)
+} catch (e) {
+  /* ignore */
+}
+
+const fichas = ref({})
+try {
+  const storedF = localStorage.getItem(STORAGE_KEY_FICHAS)
+  if (storedF) fichas.value = JSON.parse(storedF)
+} catch (e) {
+  /* ignore */
+}
+
+const logoEscuela = ref(escudoDefault)
+try {
+  const storedLogo = localStorage.getItem(STORAGE_KEY_LOGO)
+  if (storedLogo) logoEscuela.value = storedLogo
 } catch (e) {
   /* ignore */
 }
@@ -27,21 +46,68 @@ const visitaForm = reactive({
   peso: null,
   talla: null,
   temp: null,
+  hemoglobina: null,
+  fc: null,
+  fr: null,
+  paSis: null,
+  paDia: null,
+  spo2: null,
+  destino: 'salon',
+  destinoOtro: '',
   obs: '',
   continua: 'si'
 })
 
+const fichaForm = reactive({
+  dni: '',
+  fechaNacimiento: '',
+  madreApoderado: '',
+  telefono: '',
+  antecedentes: {
+    enfermedades: '',
+    discapacidades: '',
+    hospitalizaciones: '',
+    tratamiento: '',
+    medicamentos: '',
+    dosis: ''
+  },
+  alergias: '',
+  clasificacion: 'apto',
+  nota: ''
+})
+
+const destinos = [
+  { id: 'salon', label: 'Regresa a su salón' },
+  { id: 'centro_salud', label: 'Derivado a centro de salud' },
+  { id: 'casa', label: 'Enviado a su casa' },
+  { id: 'otro', label: 'Otro destino' }
+]
+
+function destinoLabel(v) {
+  if (!v) return '—'
+  if (v.destino === 'otro') return v.destinoOtro ? 'Otro: ' + v.destinoOtro : 'Otro'
+  const d = destinos.find(x => x.id === v.destino)
+  return d ? d.label : '—'
+}
+
+const vacunasForm = ref([])
+
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'alumnos', label: 'Alumnos' },
-  { id: 'seguimiento', label: 'Seguimiento' },
+  { id: 'fichas', label: 'Fichas de Salud' },
   { id: 'reporte', label: 'Reporte' }
 ]
 
 const criterios = [
-  'Brecha entre visitas consecutivas mayor a 60 días.',
-  'Sin registro de visita en los últimos 30 días.',
-  'El registro indica "No continuo" en alguna visita.'
+  'Su ficha de salud está clasificada como "Requiere atención médica".',
+  'Fue derivado a un centro de salud en alguna visita registrada.'
+]
+
+const clasificaciones = [
+  { id: 'apto', label: 'Apto', cls: 'badge-ok', color: '#0d9c6b', bg: '#e6f7ef', desc: 'Sin restricciones. Puede realizar toda actividad.' },
+  { id: 'con_observacion', label: 'Apto con observación', cls: 'badge-warn', color: '#e37400', bg: '#fff4e0', desc: 'Apto con limitaciones o recomendaciones (p. ej. evitar esfuerzo intenso).' },
+  { id: 'requiere_atencion', label: 'Requiere atención médica', cls: 'badge-bad', color: '#d93025', bg: '#fde8e8', desc: 'No apto. Debe ser derivado y atendido por personal de salud.' }
 ]
 
 const totalAlumnos = computed(() => {
@@ -63,6 +129,32 @@ const stats = computed(() => {
     }
   }
   return { ok, warning: warn, bad }
+})
+
+const statsFichas = computed(() => {
+  const res = { apto: 0, obs: 0, req: 0, sin: 0 }
+  for (const sec of Object.keys(alumnosPorSeccion.value)) {
+    for (let i = 0; i < alumnosPorSeccion.value[sec].length; i++) {
+      const f = fichas.value[sec + '_' + i]
+      if (!f || !f.clasificacion) res.sin++
+      else if (f.clasificacion === 'apto') res.apto++
+      else if (f.clasificacion === 'con_observacion') res.obs++
+      else if (f.clasificacion === 'requiere_atencion') res.req++
+    }
+  }
+  return res
+})
+
+const edadFicha = computed(() => {
+  const fn = fichaForm.fechaNacimiento
+  if (!fn) return ''
+  const n = new Date(fn)
+  if (isNaN(n.getTime())) return ''
+  const hoy = new Date()
+  let edad = hoy.getFullYear() - n.getFullYear()
+  const m = hoy.getMonth() - n.getMonth()
+  if (m < 0 || (m === 0 && hoy.getDate() < n.getDate())) edad--
+  return edad >= 0 ? edad : ''
 })
 
 const topRisk = computed(() => {
@@ -126,23 +218,33 @@ const alumnoEstado = computed(() => {
   return calcularEstado(alumnoHistorial.value)
 })
 
+function requiereDerivacion(sec, i) {
+  const f = getFicha(sec, i)
+  if (f && f.clasificacion === 'requiere_atencion') return true
+  return obtenerHistorial(sec, i).some(x => x.destino === 'centro_salud')
+}
+
 const derivados = computed(() => {
   const lista = []
   for (const sec of Object.keys(alumnosPorSeccion.value)) {
     for (let i = 0; i < alumnosPorSeccion.value[sec].length; i++) {
-      const e = calcularEstado(obtenerHistorial(sec, i))
-      if (e.estado === 'bad') {
-        const v = obtenerHistorial(sec, i)
-        const ult = v.length ? v[v.length - 1].fecha : 'Nunca'
-        const dias = diasDesde(ult)
-        lista.push({
-          nombre: alumnosPorSeccion.value[sec][i].nombre,
-          sec,
-          idx: i,
-          ultima: ult,
-          raza: dias > 60 ? `Brecha de ${dias} días` : `Sin visita en ${dias} días`
-        })
+      if (!requiereDerivacion(sec, i)) continue
+      const v = obtenerHistorial(sec, i)
+      const f = getFicha(sec, i)
+      const motivos = []
+      if (f && f.clasificacion === 'requiere_atencion') motivos.push('Ficha: requiere atención médica')
+      const derivaciones = v.filter(x => x.destino === 'centro_salud')
+      if (derivaciones.length) {
+        const ult = derivaciones[derivaciones.length - 1]
+        motivos.push('Derivado a centro de salud (' + ult.fecha + ')')
       }
+      lista.push({
+        nombre: alumnosPorSeccion.value[sec][i].nombre,
+        sec,
+        idx: i,
+        ultima: v.length ? v[v.length - 1].fecha : 'Nunca',
+        raza: motivos.join(' · ')
+      })
     }
   }
   return lista
@@ -242,7 +344,89 @@ function seleccionarAlumno(sec, i) {
 }
 
 function irAlumno() {
-  setPage('seguimiento')
+  setPage('fichas')
+}
+
+function getFicha(sec, i) {
+  return fichas.value[sec + '_' + i] || null
+}
+
+function infoClasificacion(id) {
+  return clasificaciones.find(c => c.id === id) || null
+}
+
+function clasificacionAlumno(sec, i) {
+  const f = getFicha(sec, i)
+  if (!f || !f.clasificacion) return null
+  return infoClasificacion(f.clasificacion)
+}
+
+function abrirFichaForm() {
+  if (!alumnoSeleccionado.value) return
+  const { sec, idx } = alumnoSeleccionado.value
+  const f = getFicha(sec, idx)
+  fichaForm.dni = f?.dni || ''
+  fichaForm.fechaNacimiento = f?.fechaNacimiento || ''
+  fichaForm.madreApoderado = f?.madreApoderado || ''
+  fichaForm.telefono = f?.telefono || ''
+  fichaForm.antecedentes.enfermedades = f?.antecedentes?.enfermedades || ''
+  fichaForm.antecedentes.discapacidades = f?.antecedentes?.discapacidades || ''
+  fichaForm.antecedentes.hospitalizaciones = f?.antecedentes?.hospitalizaciones || ''
+  fichaForm.antecedentes.tratamiento = f?.antecedentes?.tratamiento || ''
+  fichaForm.antecedentes.medicamentos = f?.antecedentes?.medicamentos || ''
+  fichaForm.antecedentes.dosis = f?.antecedentes?.dosis || ''
+  fichaForm.alergias = f?.alergias || ''
+  fichaForm.clasificacion = f?.clasificacion || 'apto'
+  fichaForm.nota = f?.nota || ''
+  vacunasForm.value = (f?.vacunas || []).map(v => ({
+    vacuna: v.vacuna || '',
+    fecha: v.fecha || '',
+    dosis: v.dosis || ''
+  }))
+  if (!vacunasForm.value.length) vacunasForm.value.push({ vacuna: '', fecha: '', dosis: '' })
+}
+
+function agregarVacuna() {
+  vacunasForm.value.push({ vacuna: '', fecha: '', dosis: '' })
+}
+
+function quitarVacuna(i) {
+  vacunasForm.value.splice(i, 1)
+}
+
+function guardarFicha() {
+  if (!alumnoSeleccionado.value) return
+  const { sec, idx } = alumnoSeleccionado.value
+  const id = sec + '_' + idx
+  fichas.value[id] = {
+    dni: fichaForm.dni.trim(),
+    fechaNacimiento: fichaForm.fechaNacimiento,
+    madreApoderado: fichaForm.madreApoderado.trim(),
+    telefono: fichaForm.telefono.trim(),
+    antecedentes: {
+      enfermedades: fichaForm.antecedentes.enfermedades.trim(),
+      discapacidades: fichaForm.antecedentes.discapacidades.trim(),
+      hospitalizaciones: fichaForm.antecedentes.hospitalizaciones.trim(),
+      tratamiento: fichaForm.antecedentes.tratamiento.trim(),
+      medicamentos: fichaForm.antecedentes.medicamentos.trim(),
+      dosis: fichaForm.antecedentes.dosis.trim()
+    },
+    alergias: fichaForm.alergias.trim(),
+    vacunas: vacunasForm.value.filter(v => v.vacuna.trim()).map(v => ({
+      vacuna: v.vacuna.trim(),
+      fecha: v.fecha,
+      dosis: v.dosis.trim()
+    })),
+    clasificacion: fichaForm.clasificacion,
+    nota: fichaForm.nota.trim(),
+    actualizada: new Date().toISOString()
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY_FICHAS, JSON.stringify(fichas.value))
+  } catch (e) {
+    /* ignore */
+  }
+  toastMsg('Ficha de salud guardada', 'success', 'check_circle')
 }
 
 function abrirModalVisita() {
@@ -252,6 +436,14 @@ function abrirModalVisita() {
   visitaForm.peso = null
   visitaForm.talla = null
   visitaForm.temp = null
+  visitaForm.hemoglobina = null
+  visitaForm.fc = null
+  visitaForm.fr = null
+  visitaForm.paSis = null
+  visitaForm.paDia = null
+  visitaForm.spo2 = null
+  visitaForm.destino = 'salon'
+  visitaForm.destinoOtro = ''
   visitaForm.obs = ''
   visitaForm.continua = 'si'
   modalVisita.value = true
@@ -275,6 +467,14 @@ function guardarVisita() {
     peso: visitaForm.peso || null,
     talla: visitaForm.talla || null,
     temp: visitaForm.temp || null,
+    hemoglobina: visitaForm.hemoglobina || null,
+    fc: visitaForm.fc || null,
+    fr: visitaForm.fr || null,
+    paSis: visitaForm.paSis || null,
+    paDia: visitaForm.paDia || null,
+    spo2: visitaForm.spo2 || null,
+    destino: visitaForm.destino,
+    destinoOtro: visitaForm.destinoOtro || '',
     obs: visitaForm.obs || '',
     continua: visitaForm.continua
   })
@@ -302,7 +502,8 @@ function descargarJSON() {
     fechaRespaldo: new Date().toISOString(),
     totalAlumnos: totalAlumnos.value,
     secciones: alumnosPorSeccion.value,
-    registrosVisitas: historial.value
+    registrosVisitas: historial.value,
+    fichasSalud: fichas.value
   }
   const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -315,7 +516,7 @@ function descargarJSON() {
 }
 
 function descargarCSV() {
-  let csv = 'Alumno,Seccion,TotalVisitas,UltimaVisita,DiasDesdeUltima,Estado,RequiereDerivacion\n'
+  let csv = 'Alumno,Seccion,TotalVisitas,UltimaVisita,DiasDesdeUltima,Estado,RequiereDerivacion,ClasificacionSalud,Dni,MadreApoderado,Telefono\n'
   for (const sec of Object.keys(alumnosPorSeccion.value)) {
     for (let i = 0; i < alumnosPorSeccion.value[sec].length; i++) {
       const id = sec + '_' + i
@@ -324,7 +525,9 @@ function descargarCSV() {
       const e = calcularEstado(v)
       const ult = v.length ? v[v.length - 1].fecha : 'Nunca'
       const dias = v.length ? diasDesde(ult) : 9999
-      csv += `"${a.nombre}","${sec}",${v.length},"${ult}",${dias},"${e.label}",${e.estado === 'bad' ? 'SI' : 'NO'}\n`
+      const f = fichas.value[id]
+      const cls = f ? (infoClasificacion(f.clasificacion)?.label || '') : ''
+      csv += `"${a.nombre}","${sec}",${v.length},"${ult}",${dias},"${e.label}",${requiereDerivacion(sec, i) ? 'SI' : 'NO'},"${cls}","${f?.dni || ''}","${f?.madreApoderado || ''}","${f?.telefono || ''}"\n`
     }
   }
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
@@ -351,6 +554,10 @@ function subirJSON() {
         if (datos.registrosVisitas) {
           historial.value = datos.registrosVisitas
           guardarStorage()
+          if (datos.fichasSalud) {
+            fichas.value = datos.fichasSalud
+            localStorage.setItem(STORAGE_KEY_FICHAS, JSON.stringify(fichas.value))
+          }
           toastMsg('Registros importados correctamente', 'success', 'check_circle')
         } else toastMsg('El archivo no contiene registros válidos', 'error', 'error')
       } catch (err) {
@@ -362,18 +569,47 @@ function subirJSON() {
   inp.click()
 }
 
+function subirLogo() {
+  const inp = document.createElement('input')
+  inp.type = 'file'
+  inp.accept = 'image/*'
+  inp.onchange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      logoEscuela.value = ev.target.result
+      try { localStorage.setItem(STORAGE_KEY_LOGO, logoEscuela.value) } catch (err) { /* ignore */ }
+      toastMsg('Logo actualizado correctamente', 'success', 'check_circle')
+    }
+    reader.readAsDataURL(file)
+  }
+  inp.click()
+}
+
+function quitarLogo() {
+  logoEscuela.value = escudoDefault
+  localStorage.removeItem(STORAGE_KEY_LOGO)
+  toastMsg('Logo restaurado al escudo del colegio', 'info', 'delete')
+}
+
 const store = {
-  alumnosPorSeccion, historial,
+  alumnosPorSeccion, historial, fichas,
   activePage, busquedaAlumnos, seccionActiva,
   alumnoSeleccionado, alumnoActual, alumnoHistorial, ultimaFecha, alumnoEstado,
   modalVisita, ayudaOpen, toast, visitaForm,
+  fichaForm, vacunasForm, edadFicha, clasificaciones, statsFichas, logoEscuela,
+  destinos, destinoLabel,
   menuItems, criterios,
   totalAlumnos, stats, topRisk,
   seccionesFiltradas, seccionesFiltradasObj, derivados,
   setPage, mostrarAyuda, LimpiarDatos, toastMsg,
   seleccionarAlumno, irAlumno, abrirModalVisita, cerrarModalVisita,
   guardarVisita, eliminarVisita, descargarJSON, descargarCSV, subirJSON,
-  getEstadoClass, getAlumnoEstado
+  getEstadoClass, getAlumnoEstado,
+  getFicha, infoClasificacion, clasificacionAlumno, requiereDerivacion,
+  abrirFichaForm, guardarFicha, agregarVacuna, quitarVacuna,
+  subirLogo, quitarLogo
 }
 
 export { store }

@@ -7,7 +7,7 @@ import ModalVisita from './components/ModalVisita.vue'
 import HelpModal from './components/HelpModal.vue'
 import Dashboard from './views/Dashboard.vue'
 import Alumnos from './views/Alumnos.vue'
-import Seguimiento from './views/Seguimiento.vue'
+import Fichas from './views/Fichas.vue'
 import Reporte from './views/Reporte.vue'
 
 const { activePage, modalVisita, toast, ayudaOpen } = store
@@ -21,7 +21,7 @@ const { activePage, modalVisita, toast, ayudaOpen } = store
       <div class="content">
         <Dashboard v-if="activePage === 'dashboard'" />
         <Alumnos v-else-if="activePage === 'alumnos'" />
-        <Seguimiento v-else-if="activePage === 'seguimiento'" />
+        <Fichas v-else-if="activePage === 'fichas'" />
         <Reporte v-else-if="activePage === 'reporte'" />
       </div>
     </div>

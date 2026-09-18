@@ -7,8 +7,8 @@ const { LimpiarDatos, mostrarAyuda } = store
 <template>
   <header class="topbar">
     <div class="topbar-left">
-      <span class="topbar-title">Seguimiento Clínico</span>
-      <span class="topbar-badge">Academia Galileo</span>
+      <span class="topbar-title">Sistema de Salud Escolar</span>
+      <span class="topbar-badge">Colegio Galileo</span>
     </div>
     <div class="topbar-right">
       <button class="icon-btn" @click="LimpiarDatos" title="Limpiar todos los registros">

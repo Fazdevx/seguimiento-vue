@@ -14,7 +14,7 @@ function abrirPerfil(sec, idx) {
     <div class="page-header">
       <div>
         <h1 class="page-title">Reporte de Derivaciones</h1>
-        <p class="page-subtitle">Alumnos que requieren atención en centro de salud</p>
+        <p class="page-subtitle">Alumnos con atención médica requerida o derivados a centro de salud</p>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-secondary" @click="descargarCSV">
@@ -48,7 +48,7 @@ function abrirPerfil(sec, idx) {
           <div v-for="(item, idx) in derivados" :key="idx" class="deriva-item">
             <div class="info">
               <div class="name">{{ item.nombre }}</div>
-              <div class="meta">Sección: {{ item.sec }} · Última visita: {{ item.ultima }} · {{ item.raza }}</div>
+              <div class="meta">{{ item.raza }}</div>
             </div>
             <button class="btn btn-danger btn-sm" @click="abrirPerfil(item.sec, item.idx)">
               <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
