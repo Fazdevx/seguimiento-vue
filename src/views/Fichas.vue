@@ -553,7 +553,7 @@ function paTexto(v) {
                 <td>{{ v.continua === 'si' ? 'Sí' : 'No' }}</td>
               </tr>
               <tr v-if="!alumnoHistorial.length">
-                <td colspan="13" style="text-align:center;color:var(--text-muted);font-style:italic">Sin atenciones registradas</td>
+                <td colspan="13" style="text-align:center;color:var(--text-muted);font-style:italic">Sin atenciones registradas.</td>
               </tr>
             </tbody>
           </table>
