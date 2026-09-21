@@ -83,6 +83,14 @@ function paTexto(v) {
   if (v.paSis != null) return v.paSis + '/—'
   return '—'
 }
+
+function paTextoFicha() {
+  const paSis = fichaForm.signosVitales.presionArterialSistolica
+  const paDia = fichaForm.signosVitales.presionArterialDiastolica
+  if (paSis != null && paDia != null) return paSis + '/' + paDia
+  if (paSis != null) return paSis + '/—'
+  return '—'
+}
 </script>
 
 <template>
@@ -323,6 +331,104 @@ function paTexto(v) {
         </div>
       </div>
 
+      <!-- Signos Vitales -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="material-icons">monitor_heart</span> Signos Vitales</h3>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Frecuencia Cardíaca (lpm)</label>
+              <input type="number" v-model.number="fichaForm.signosVitales.frecuenciaCardiaca" placeholder="ej. 80" />
+            </div>
+            <div class="field">
+              <label>Frecuencia Respiratoria (rpm)</label>
+              <input type="number" v-model.number="fichaForm.signosVitales.frecuenciaRespiratoria" placeholder="ej. 20" />
+            </div>
+            <div class="field">
+              <label>Presión Arterial Sistólica (mmHg)</label>
+              <input type="number" v-model.number="fichaForm.signosVitales.presionArterialSistolica" placeholder="ej. 120" />
+            </div>
+            <div class="field">
+              <label>Presión Arterial Diastólica (mmHg)</label>
+              <input type="number" v-model.number="fichaForm.signosVitales.presionArterialDiastolica" placeholder="ej. 80" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Temperatura (°C)</label>
+              <input type="number" step="0.1" v-model.number="fichaForm.signosVitales.temperatura" placeholder="ej. 36.5" />
+            </div>
+            <div class="field">
+              <label>Saturación O₂ (%)</label>
+              <input type="number" v-model.number="fichaForm.signosVitales.saturacionO2" placeholder="ej. 98" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evaluación de Triaje -->
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="material-icons">assessment</span> Evaluación de Triaje</h3>
+        </div>
+        <div class="card-body">
+          <div class="field-row">
+            <div class="field">
+              <label>Peso (kg)</label>
+              <input type="number" step="0.1" v-model.number="fichaForm.evaluacionTriaje.peso" placeholder="ej. 25.5" />
+            </div>
+            <div class="field">
+              <label>Talla (cm)</label>
+              <input type="number" v-model.number="fichaForm.evaluacionTriaje.talla" placeholder="ej. 120" />
+            </div>
+            <div class="field">
+              <label>IMC</label>
+              <input type="number" step="0.1" v-model.number="fichaForm.evaluacionTriaje.imc" placeholder="ej. 17.7" />
+            </div>
+            <div class="field">
+              <label>Puntuación Z</label>
+              <input type="number" step="0.1" v-model.number="fichaForm.evaluacionTriaje.puntuacionZ" placeholder="ej. 0.5" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Hemoglobina (g/dL)</label>
+              <input type="number" step="0.1" v-model.number="fichaForm.evaluacionTriaje.hemoglobina" placeholder="ej. 12.5" />
+            </div>
+            <div class="field">
+              <label>Salud Bucal</label>
+              <input v-model="fichaForm.evaluacionTriaje.saludBucal" placeholder="ej. Normal" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Salud Ocular - Ojo Izquierdo</label>
+              <input v-model="fichaForm.evaluacionTriaje.saludOcularIzquierdo" placeholder="ej. Normal" />
+            </div>
+            <div class="field">
+              <label>Salud Ocular - Ojo Derecho</label>
+              <input v-model="fichaForm.evaluacionTriaje.saludOcularDerecho" placeholder="ej. Normal" />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Salud Auditiva - Oído Izquierdo</label>
+              <input v-model="fichaForm.evaluacionTriaje.saludAuditivaIzquierdo" placeholder="ej. Normal" />
+            </div>
+            <div class="field">
+              <label>Salud Auditiva - Oído Derecho</label>
+              <input v-model="fichaForm.evaluacionTriaje.saludAuditivaDerecho" placeholder="ej. Normal" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Observaciones de Triaje</label>
+            <textarea v-model="fichaForm.evaluacionTriaje.observaciones" placeholder="Observaciones adicionales..." rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
       <!-- Historico de atenciones -->
       <div class="card">
         <div class="card-header">
@@ -525,6 +631,84 @@ function paTexto(v) {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="fp-section">
+          <h3>Signos Vitales</h3>
+          <div class="fp-grid">
+            <div class="fp-campo">
+              <label>Frecuencia Cardíaca</label>
+              <p :class="{ blank: !fichaForm.signosVitales.frecuenciaCardiaca }">{{ fichaForm.signosVitales.frecuenciaCardiaca ? fichaForm.signosVitales.frecuenciaCardiaca + ' lpm' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Frecuencia Respiratoria</label>
+              <p :class="{ blank: !fichaForm.signosVitales.frecuenciaRespiratoria }">{{ fichaForm.signosVitales.frecuenciaRespiratoria ? fichaForm.signosVitales.frecuenciaRespiratoria + ' rpm' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Presión Arterial</label>
+              <p :class="{ blank: !fichaForm.signosVitales.presionArterialSistolica && !fichaForm.signosVitales.presionArterialDiastolica }">
+                {{ fichaForm.signosVitales.presionArterialSistolica && fichaForm.signosVitales.presionArterialDiastolica ? fichaForm.signosVitales.presionArterialSistolica + '/' + fichaForm.signosVitales.presionArterialDiastolica + ' mmHg' : '—' }}
+              </p>
+            </div>
+            <div class="fp-campo">
+              <label>Temperatura</label>
+              <p :class="{ blank: !fichaForm.signosVitales.temperatura }">{{ fichaForm.signosVitales.temperatura ? fichaForm.signosVitales.temperatura + ' °C' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Saturación O₂</label>
+              <p :class="{ blank: !fichaForm.signosVitales.saturacionO2 }">{{ fichaForm.signosVitales.saturacionO2 ? fichaForm.signosVitales.saturacionO2 + ' %' : '—' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="fp-section">
+          <h3>Evaluación de Triaje</h3>
+          <div class="fp-grid">
+            <div class="fp-campo">
+              <label>Peso</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.peso }">{{ fichaForm.evaluacionTriaje.peso ? fichaForm.evaluacionTriaje.peso + ' kg' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Talla</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.talla }">{{ fichaForm.evaluacionTriaje.talla ? fichaForm.evaluacionTriaje.talla + ' cm' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>IMC</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.imc }">{{ fichaForm.evaluacionTriaje.imc || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Puntuación Z</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.puntuacionZ }">{{ fichaForm.evaluacionTriaje.puntuacionZ || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Hemoglobina</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.hemoglobina }">{{ fichaForm.evaluacionTriaje.hemoglobina ? fichaForm.evaluacionTriaje.hemoglobina + ' g/dL' : '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Salud Bucal</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.saludBucal }">{{ fichaForm.evaluacionTriaje.saludBucal || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Salud Ocular - Izquierdo</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.saludOcularIzquierdo }">{{ fichaForm.evaluacionTriaje.saludOcularIzquierdo || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Salud Ocular - Derecho</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.saludOcularDerecho }">{{ fichaForm.evaluacionTriaje.saludOcularDerecho || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Salud Auditiva - Izquierdo</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.saludAuditivaIzquierdo }">{{ fichaForm.evaluacionTriaje.saludAuditivaIzquierdo || '—' }}</p>
+            </div>
+            <div class="fp-campo">
+              <label>Salud Auditiva - Derecho</label>
+              <p :class="{ blank: !fichaForm.evaluacionTriaje.saludAuditivaDerecho }">{{ fichaForm.evaluacionTriaje.saludAuditivaDerecho || '—' }}</p>
+            </div>
+          </div>
+          <div v-if="fichaForm.evaluacionTriaje.observaciones" style="margin-top:12px">
+            <label>Observaciones de Triaje</label>
+            <p :class="{ blank: !fichaForm.evaluacionTriaje.observaciones }">{{ fichaForm.evaluacionTriaje.observaciones }}</p>
+          </div>
         </div>
 
         <div class="fp-section">

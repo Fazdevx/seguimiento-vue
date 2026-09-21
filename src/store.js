@@ -72,6 +72,27 @@ const fichaForm = reactive({
     dosis: ''
   },
   alergias: '',
+  signosVitales: {
+    frecuenciaCardiaca: null,
+    frecuenciaRespiratoria: null,
+    presionArterialSistolica: null,
+    presionArterialDiastolica: null,
+    temperatura: null,
+    saturacionO2: null
+  },
+  evaluacionTriaje: {
+    peso: null,
+    talla: null,
+    imc: null,
+    puntuacionZ: null,
+    hemoglobina: null,
+    saludBucal: '',
+    saludOcularIzquierdo: '',
+    saludOcularDerecho: '',
+    saludAuditivaIzquierdo: '',
+    saludAuditivaDerecho: '',
+    observaciones: ''
+  },
   clasificacion: 'apto',
   nota: ''
 })
@@ -376,6 +397,23 @@ function abrirFichaForm() {
   fichaForm.antecedentes.medicamentos = f?.antecedentes?.medicamentos || ''
   fichaForm.antecedentes.dosis = f?.antecedentes?.dosis || ''
   fichaForm.alergias = f?.alergias || ''
+  fichaForm.signosVitales.frecuenciaCardiaca = f?.signosVitales?.frecuenciaCardiaca || null
+  fichaForm.signosVitales.frecuenciaRespiratoria = f?.signosVitales?.frecuenciaRespiratoria || null
+  fichaForm.signosVitales.presionArterialSistolica = f?.signosVitales?.presionArterialSistolica || null
+  fichaForm.signosVitales.presionArterialDiastolica = f?.signosVitales?.presionArterialDiastolica || null
+  fichaForm.signosVitales.temperatura = f?.signosVitales?.temperatura || null
+  fichaForm.signosVitales.saturacionO2 = f?.signosVitales?.saturacionO2 || null
+  fichaForm.evaluacionTriaje.peso = f?.evaluacionTriaje?.peso || null
+  fichaForm.evaluacionTriaje.talla = f?.evaluacionTriaje?.talla || null
+  fichaForm.evaluacionTriaje.imc = f?.evaluacionTriaje?.imc || null
+  fichaForm.evaluacionTriaje.puntuacionZ = f?.evaluacionTriaje?.puntuacionZ || null
+  fichaForm.evaluacionTriaje.hemoglobina = f?.evaluacionTriaje?.hemoglobina || null
+  fichaForm.evaluacionTriaje.saludBucal = f?.evaluacionTriaje?.saludBucal || ''
+  fichaForm.evaluacionTriaje.saludOcularIzquierdo = f?.evaluacionTriaje?.saludOcularIzquierdo || ''
+  fichaForm.evaluacionTriaje.saludOcularDerecho = f?.evaluacionTriaje?.saludOcularDerecho || ''
+  fichaForm.evaluacionTriaje.saludAuditivaIzquierdo = f?.evaluacionTriaje?.saludAuditivaIzquierdo || ''
+  fichaForm.evaluacionTriaje.saludAuditivaDerecho = f?.evaluacionTriaje?.saludAuditivaDerecho || ''
+  fichaForm.evaluacionTriaje.observaciones = f?.evaluacionTriaje?.observaciones || ''
   fichaForm.clasificacion = f?.clasificacion || 'apto'
   fichaForm.nota = f?.nota || ''
   vacunasForm.value = (f?.vacunas || []).map(v => ({
@@ -412,6 +450,27 @@ function guardarFicha() {
       dosis: fichaForm.antecedentes.dosis.trim()
     },
     alergias: fichaForm.alergias.trim(),
+    signosVitales: {
+      frecuenciaCardiaca: fichaForm.signosVitales.frecuenciaCardiaca || null,
+      frecuenciaRespiratoria: fichaForm.signosVitales.frecuenciaRespiratoria || null,
+      presionArterialSistolica: fichaForm.signosVitales.presionArterialSistolica || null,
+      presionArterialDiastolica: fichaForm.signosVitales.presionArterialDiastolica || null,
+      temperatura: fichaForm.signosVitales.temperatura || null,
+      saturacionO2: fichaForm.signosVitales.saturacionO2 || null
+    },
+    evaluacionTriaje: {
+      peso: fichaForm.evaluacionTriaje.peso || null,
+      talla: fichaForm.evaluacionTriaje.talla || null,
+      imc: fichaForm.evaluacionTriaje.imc || null,
+      puntuacionZ: fichaForm.evaluacionTriaje.puntuacionZ || null,
+      hemoglobina: fichaForm.evaluacionTriaje.hemoglobina || null,
+      saludBucal: fichaForm.evaluacionTriaje.saludBucal.trim(),
+      saludOcularIzquierdo: fichaForm.evaluacionTriaje.saludOcularIzquierdo.trim(),
+      saludOcularDerecho: fichaForm.evaluacionTriaje.saludOcularDerecho.trim(),
+      saludAuditivaIzquierdo: fichaForm.evaluacionTriaje.saludAuditivaIzquierdo.trim(),
+      saludAuditivaDerecho: fichaForm.evaluacionTriaje.saludAuditivaDerecho.trim(),
+      observaciones: fichaForm.evaluacionTriaje.observaciones.trim()
+    },
     vacunas: vacunasForm.value.filter(v => v.vacuna.trim()).map(v => ({
       vacuna: v.vacuna.trim(),
       fecha: v.fecha,
