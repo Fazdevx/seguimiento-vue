@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import { store } from '../store.js'
 
 const {
@@ -11,12 +12,32 @@ const {
   irAlumno,
   getAlumnoEstado,
   getEstadoClass,
-  clasificacionAlumno
+  clasificacionAlumno,
+  nuevoAlumnoForm,
+  todasLasSecciones,
+  crearAlumno
 } = store
+
+const mostrarModalCrear = ref(false)
 
 function abrirFicha(sec, i) {
   seleccionarAlumno(sec, i)
   irAlumno()
+}
+
+function abrirModalCrear() {
+  mostrarModalCrear.value = true
+}
+
+function cerrarModalCrear() {
+  mostrarModalCrear.value = false
+  nuevoAlumnoForm.nombre = ''
+  nuevoAlumnoForm.seccion = ''
+}
+
+function handleCrearAlumno() {
+  crearAlumno()
+  cerrarModalCrear()
 }
 </script>
 
@@ -27,6 +48,10 @@ function abrirFicha(sec, i) {
         <h1 class="page-title">Alumnos por Sección</h1>
         <p class="page-subtitle">{{ totalAlumnos }} alumnos · 19 secciones</p>
       </div>
+      <button class="btn btn-primary" @click="abrirModalCrear">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+        Nuevo Alumno
+      </button>
     </div>
 
     <div class="search-box">
@@ -88,6 +113,39 @@ function abrirFicha(sec, i) {
               <p>No se encontraron alumnos</p>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para crear nuevo alumno -->
+    <div v-if="mostrarModalCrear" class="modal-overlay" @click.self="cerrarModalCrear">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Crear Nuevo Alumno</h3>
+          <button class="btn-icon" @click="cerrarModalCrear">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="field">
+            <label>Nombre completo del alumno</label>
+            <input type="text" v-model="nuevoAlumnoForm.nombre" placeholder="ej. Juan Pérez García" />
+          </div>
+          <div class="field">
+            <label>Sección</label>
+            <select v-model="nuevoAlumnoForm.seccion">
+              <option value="">Seleccionar sección...</option>
+              <option v-for="sec in todasLasSecciones" :key="sec" :value="sec">{{ sec }}</option>
+            </select>
+          </div>
+          <div class="alert alert-info" style="margin-top:16px">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+            <span>El alumno se creará solo con su nombre. Después podrás llenar su DNI y demás datos médicos en la ficha de salud.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="cerrarModalCrear">Cancelar</button>
+          <button class="btn btn-primary" @click="handleCrearAlumno">Crear Alumno</button>
         </div>
       </div>
     </div>

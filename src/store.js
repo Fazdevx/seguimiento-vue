@@ -5,8 +5,24 @@ import escudoDefault from './assets/escudo.png'
 const STORAGE_KEY = 'seguimientoGalileo_vue'
 const STORAGE_KEY_FICHAS = 'seguimientoGalileo_fichas_vue'
 const STORAGE_KEY_LOGO = 'seguimientoGalileo_logo'
+const STORAGE_KEY_ALUMNOS = 'seguimientoGalileo_alumnos_vue'
 
 const alumnosPorSeccion = ref(alumnos)
+
+try {
+  const storedAlumnos = localStorage.getItem(STORAGE_KEY_ALUMNOS)
+  if (storedAlumnos) {
+    const alumnosPersonalizados = JSON.parse(storedAlumnos)
+    for (const sec in alumnosPersonalizados) {
+      if (!alumnosPorSeccion.value[sec]) {
+        alumnosPorSeccion.value[sec] = []
+      }
+      alumnosPorSeccion.value[sec] = [...alumnosPorSeccion.value[sec], ...alumnosPersonalizados[sec]]
+    }
+  }
+} catch (e) {
+  /* ignore */
+}
 
 const historial = ref({})
 try {
@@ -652,6 +668,58 @@ function quitarLogo() {
   toastMsg('Logo restaurado al escudo del colegio', 'info', 'delete')
 }
 
+const nuevoAlumnoForm = reactive({
+  nombre: '',
+  seccion: ''
+})
+
+const todasLasSecciones = computed(() => {
+  return Object.keys(alumnosPorSeccion.value).sort()
+})
+
+function crearAlumno() {
+  if (!nuevoAlumnoForm.nombre.trim()) {
+    toastMsg('El nombre del alumno es obligatorio', 'error', 'error')
+    return
+  }
+  if (!nuevoAlumnoForm.seccion) {
+    toastMsg('Debes seleccionar una sección', 'error', 'error')
+    return
+  }
+
+  const sec = nuevoAlumnoForm.seccion
+  if (!alumnosPorSeccion.value[sec]) {
+    alumnosPorSeccion.value[sec] = []
+  }
+
+  alumnosPorSeccion.value[sec].push({
+    nombre: nuevoAlumnoForm.nombre.trim()
+  })
+
+  guardarAlumnosPersonalizados()
+
+  nuevoAlumnoForm.nombre = ''
+  nuevoAlumnoForm.seccion = ''
+
+  toastMsg('Alumno creado correctamente', 'success', 'check_circle')
+}
+
+function guardarAlumnosPersonalizados() {
+  const alumnosPersonalizados = {}
+  for (const sec in alumnosPorSeccion.value) {
+    const alumnosOriginales = alumnos[sec] || []
+    const alumnosNuevos = alumnosPorSeccion.value[sec].slice(alumnosOriginales.length)
+    if (alumnosNuevos.length > 0) {
+      alumnosPersonalizados[sec] = alumnosNuevos
+    }
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY_ALUMNOS, JSON.stringify(alumnosPersonalizados))
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 const store = {
   alumnosPorSeccion, historial, fichas,
   activePage, busquedaAlumnos, seccionActiva,
@@ -668,7 +736,8 @@ const store = {
   getEstadoClass, getAlumnoEstado,
   getFicha, infoClasificacion, clasificacionAlumno, requiereDerivacion,
   abrirFichaForm, guardarFicha, agregarVacuna, quitarVacuna,
-  subirLogo, quitarLogo
+  subirLogo, quitarLogo,
+  nuevoAlumnoForm, todasLasSecciones, crearAlumno
 }
 
 export { store }
